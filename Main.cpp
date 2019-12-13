@@ -1,14 +1,14 @@
 #include <SFML/Graphics.hpp>
 #include "List_of_platforms.h"
-#include "GraphicManager_Test.h"
 #include "vector2I.h"
+#include "Person.h"
 
-#include <iostream>
 
-
-/*const int window_heghth = 650, window_width = 400,
-		platform_heghth = 10, platform_width = 30,
-		platforms_rate = 100;*/
+/*
+const int window_heighth = 650, window_width = 400,
+		platform_heighth = 10, platform_width = 30,
+		platforms_rate = 100;
+*/
 
 
 bool is_mouse_position_in_district_of_button(const vector2I& mouse ,const vector2I& button , const int& button_height,const int& button_width){
@@ -63,9 +63,7 @@ class Images : public DrawableObject {
 		}
 		void Draw(sf::RenderWindow* window){
 
-			(*window).draw(screen);
-			(*window).draw(platform_0);
-			(*window).draw(person);
+			window->clear(sf::Color(0,200,0));
 			
 		}
     private:
@@ -149,70 +147,89 @@ class Main_menu{
 		sf::Sprite pressed_button , not_pressed_button;
 };
 
-
-void main_cycle(sf::RenderWindow& window, List_of_platforms& platforms,GraphicManager& manager)
+void main_cycle(sf::RenderWindow& window, List_of_platforms& platforms,GraphicManager& manager,Person& person)
 {
-	int height = 0;
-	sf::Clock clock;
+		float height = 0;
+		sf::Clock clock;
 
-	while (window.isOpen())
-	{
-		float dt = clock.getElapsedTime().asSeconds();
-		clock.restart();
+		sf::Texture background_texture;
+		background_texture.loadFromFile("images/background.png");
+		sf::Sprite background;
 
-		// --control--
+		background.setTexture(background_texture);
 
-		sf::Event event;
-		while (window.pollEvent(event))
+
+
+		while (window.isOpen())
 		{
-			if (event.type == sf::Event::Closed)
-				window.close();
+			float dt = clock.getElapsedTime().asSeconds();
+			clock.restart();
+
+			sf::Event event_of_press_moving_button;
+			sf::Event event;
+			while (window.pollEvent(event))
+			{
+				if (event.type == sf::Event::Closed){
+					window.close();
+				}
+				if(event.type == sf::Event::KeyPressed){
+
+					event_of_press_moving_button = event;
+					break;
+            	}	   
+			}
+
+
+			// --logics--
+
+			// update objcts
+
+			platforms.update(height,dt);
+			person.update(event_of_press_moving_button,platforms,dt,height,window_height);
+
+			// --drawing--
+
+			window.clear(); // or background
+			// draw objects
+			window.draw(background);
+			person.draw(window);
+			platforms.draw(window);
+			
+
+
+			window.display();
+			
 		}
-
-		// ...
-
-
-		// --logics--
-
-		// update objcts
-		platforms.update(height);
+}	
 
 
-		// --drawing--
 
-        //testing
+int main(){
 
+
+	Main_menu menu;
 	
 
-        // testing
+	Person person;
+	List_of_platforms platforms;
+	
 
-		window.clear(sf::Color(255,255,255)); // or background
-		// draw objects
-		manager.DrawAll(&window);
+    GraphicManager manager;
+	manager.Register(&platforms);
+	manager.Register(&person);
+
+	
+	
+
+	
+	sf::RenderWindow window(sf::VideoMode(window_width, window_height), "Moodle Jump");
+	srand(time(nullptr));
+
+	
+	
+	while (window.isOpen()){
 
 		
-
-		window.display();
-	}
-}
-
-
-int main()
-{   
-	Main_menu menu;
-
-	Images images;
-    GraphicManager manager;
-	manager.SetNumberOfObjectsAndDoArray(2);
-    manager.Register(&images);
-
-	List_of_platforms platforms;
-   
-	sf::RenderWindow window(sf::VideoMode(window_width, window_heghth), "Moodle Jump");
-	window.setFramerateLimit(80);
-	
-	while (window.isOpen())
-	{   
 		sf::Event event_of_released_button;
 		sf::Event event_of_pressed_button;
 		sf::Event event;
@@ -231,19 +248,20 @@ int main()
 				event_of_released_button = event;
 			}
 			
+			
 		}
 
 		window.clear(sf::Color(235,215,245)); // or background
 		
 		if(menu.is_restart_game_button_pressed_and_released(window,event_of_pressed_button,event_of_released_button)){
-			main_cycle(window,platforms,manager);
+			main_cycle(window,platforms,manager,person);
+			
 		}
 
 		window.display();
+		
 	}
 
-
-	//main_cycle(window, platforms,manager);
 
 	return 0;
 }
