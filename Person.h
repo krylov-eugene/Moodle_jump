@@ -1,81 +1,122 @@
 #include <SFML/Graphics.hpp>
-#include "List_of_platforms.h"
 
 
-class Person {
+
+class Person : public DrawableObject {
 
     public:
 
-        void update(){
+        Person(){
+            
+            texture_of_left_direction.loadFromFile("images/moodler_left_direction.png");
+            texture_of_right_direction.loadFromFile("images/moodler_right_direction.png");
 
-            jump;
-            refresh_x_position_if_button_of_moving_is_pressed;
-            fly;
-            recalculate_screen_position;
+            sprite_of_left_direction.setTexture(texture_of_left_direction);
+            sprite_of_right_direction.setTexture(texture_of_right_direction);
 
         }
+
+        void update(sf::Event event_of_moving_button_pressed,List_of_platforms& platforms,const float& dt,float& height,const int& window_height){
+
+            jump(platforms);
+            refresh_x_position_if_button_of_moving_is_pressed(event_of_moving_button_pressed);
+            if ( y_position >= 150 || Vy > 0 ){
+                fly(dt);
+            }
+            else{
+                recalculate_screen_position(height,dt);
+            }
+
+        }
+
+        void draw(sf::RenderWindow& window){
+
+            if(right_direction_of_moodler){
+                
+                sprite_of_right_direction.setPosition(x_position,y_position);
+                window.draw(sprite_of_right_direction);
+
+            }
+            else{
+
+                sprite_of_left_direction.setPosition(x_position,y_position);
+                window.draw(sprite_of_left_direction);
+
+            }
+            
+        }
+
     private:
 
-        double x_position = 0, y_position = 0,
-               Vy = 0;
+        double x_position = 200, y_position = 400,
+               Vy = -400 ;
+        const double person_width = 80 , person_height = 90;
 
-        const double person_width = 20 , person_height = 40;
+        bool right_direction_of_moodler = false;
 
-        void recalculate_screen_position(int& heghth,const int& window_heghth){
+        sf::Texture texture_of_left_direction , texture_of_right_direction;
+        sf::Sprite sprite_of_left_direction , sprite_of_right_direction;
 
-            if(y_position >= window_heghth/2 ){
+        void recalculate_screen_position(float& height,const float& dt){
 
-               heghth+=4;    
-
-            }            
+            height-=Vy*dt; 
+            Vy += 500*dt;
 
         }
 
-        void jump(){
+        void jump(List_of_platforms& platforms){
 
-            if(is_collide_with_platform && Vy >= 0){
-                Vy *= (-1);
+            if(is_collide_with_platform(platforms) && Vy >= 0){
+                Vy = -500;
+                
             }
         }
 
         bool is_collide_with_platform(List_of_platforms& platforms){
 
-            int len_of_list = platforms.length();
+            int len_of_list = platforms.list.length();
 
             for(int i = 0 ; i < len_of_list ; ++i){
+                
+                
+            
+                if(x_position + person_width >= platforms.list[i].x && x_position <= platforms.list[i].x + platform_width &&
+                  y_position + person_height >= platforms.list[i].y && platforms.list[i].y + platform_height >= y_position + person_height )
+                  { 
+                      if(platforms.list[i].kind == 1){
+                        
+                            platforms.list.pop(i);
+                            return false;
 
-                if(x_position + person_width >= platforms[i].x && x_position <= platforms[i].x + platform_width &&
-                  y_position + person_height <= platforms[i].y && platforms[i].y - y_position <= person_height)
-                  {
+                      }
                         return true;
-                        break;
+                        
                   }
                 
-                return false;
             }
+            return false;
         }
         
-        void refresh_x_position_if_button_of_moving_is_pressed(){
+        void refresh_x_position_if_button_of_moving_is_pressed(sf::Event event_of_moving_button_pressed){
 
-            sf::Event event;
-            if(event.type == sf::Event::KeyPressed){
+        
+            if(event_of_moving_button_pressed.key.code == sf::Keyboard::Right){
+                
+                this->x_position += 0.1;
+                right_direction_of_moodler = true;
 
-                if(event.key.code == sf::Keyboard::Right){
-                    
-                    this->x_position += 4;
+            }
+            else if(event_of_moving_button_pressed.key.code == sf::Keyboard::Left){
 
-                }
-                else if(event.key.code == sf::Keyboard::Left){
-
-                    this->x_position -= 4;
-
-                }
-            }   
+                this->x_position -= 0.1;
+                right_direction_of_moodler = false;
+            }
+               
         }
 
         void fly(const float& dt){
             
-            Vy += 3;
+            Vy += 500*dt;
 
             y_position += Vy*dt;
 
