@@ -16,10 +16,10 @@ class Person : public DrawableObject {
 
         }
 
-        void update(sf::Event event_of_moving_button_pressed,List_of_platforms& platforms,const float& dt,float& height,const int& window_height){
+        void update(List_of_platforms& platforms,const float& dt,float& height,const int& window_height){
 
             jump(platforms);
-            refresh_x_position_if_button_of_moving_is_pressed(event_of_moving_button_pressed);
+            refresh_x_position_if_button_of_moving_is_pressed(dt);
             if ( y_position >= 150 || Vy > 0 ){
                 fly(dt);
             }
@@ -83,7 +83,7 @@ class Person : public DrawableObject {
                 if(x_position + person_width >= platforms.list[i].x && x_position <= platforms.list[i].x + platform_width &&
                   y_position + person_height >= platforms.list[i].y && platforms.list[i].y + platform_height >= y_position + person_height )
                   { 
-                      if(platforms.list[i].kind == 1){
+                      if(platforms.list[i].kind == 1 && Vy >= 0){
                         
                             platforms.list.pop(i);
                             return false;
@@ -97,18 +97,18 @@ class Person : public DrawableObject {
             return false;
         }
         
-        void refresh_x_position_if_button_of_moving_is_pressed(sf::Event event_of_moving_button_pressed){
+        void refresh_x_position_if_button_of_moving_is_pressed(float dt){
 
         
-            if(event_of_moving_button_pressed.key.code == sf::Keyboard::Right){
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
                 
-                this->x_position += 0.1;
+                this->x_position += 200*dt;
                 right_direction_of_moodler = true;
 
             }
-            else if(event_of_moving_button_pressed.key.code == sf::Keyboard::Left){
+            else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
 
-                this->x_position -= 0.1;
+                this->x_position -= 200*dt;
                 right_direction_of_moodler = false;
             }
                
