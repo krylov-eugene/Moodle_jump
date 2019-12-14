@@ -2,7 +2,7 @@
 
 
 
-class Person : public DrawableObject {
+class Person {
 
     public:
 
@@ -43,14 +43,21 @@ class Person : public DrawableObject {
                 window.draw(sprite_of_left_direction);
 
             }
-            
+        }
+
+        double get_y_position(){
+            return y_position;
+        }
+        double get_Vy_speed(){
+            return Vy;
         }
 
     private:
 
         double x_position = 200, y_position = 400,
-               Vy = -400 ;
-        const double person_width = 80 , person_height = 90;
+                Vy = -600 ;
+        const double person_width = 80 , person_height = 90,
+                    Vy_value_after_jumping = -600;
 
         bool right_direction_of_moodler = false;
 
@@ -67,7 +74,7 @@ class Person : public DrawableObject {
         void jump(List_of_platforms& platforms){
 
             if(is_collide_with_platform(platforms) && Vy >= 0){
-                Vy = -500;
+                Vy = Vy_value_after_jumping;
                 
             }
         }
@@ -99,24 +106,27 @@ class Person : public DrawableObject {
         
         void refresh_x_position_if_button_of_moving_is_pressed(float dt){
 
-        
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-                
-                this->x_position += 200*dt;
-                right_direction_of_moodler = true;
-
+                if(x_position + person_width/2 <= window_width ){
+                    this->x_position += 200*dt;
+                    right_direction_of_moodler = true;
+                }else{
+                    x_position = -person_width/2;
+                }
             }
             else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-
-                this->x_position -= 200*dt;
-                right_direction_of_moodler = false;
-            }
-               
+                if( x_position + person_width/2 >= 0 ){
+                    this->x_position -= 200*dt;
+                    right_direction_of_moodler = false;
+                }else{
+                    x_position = window_width - person_width/2;
+                }
+            }       
         }
 
         void fly(const float& dt){
             
-            Vy += 500*dt;
+            Vy += 1000*dt;
 
             y_position += Vy*dt;
 
